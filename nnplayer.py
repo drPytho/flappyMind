@@ -4,8 +4,8 @@ import math
 import ANNGenetic.ann as ann
 
 
-network = ann.ANN(4)
-network.add_layer(ann.Layer(8, activation=np.tanh))
+network = ann.ANN(6)
+network.add_layer(ann.Layer(16, activation=np.tanh))
 network.add_layer(ann.Layer(1, activation=np.tanh))
 
 FAMILY = None

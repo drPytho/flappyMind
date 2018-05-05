@@ -19,6 +19,7 @@ BASEY        = SCREENHEIGHT * 0.79
 IMAGES, SOUNDS, HITMASKS = {}, {}, {}
 
 PLAYERX = int(SCREENWIDTH * 0.2)
+DRAW_SPEED = 1
 
 # list of all possible players (tuple of 3 positions of flap)
 PLAYERS_LIST = (
@@ -63,7 +64,7 @@ except NameError:
 
 
 def main():
-    global SCREEN, FPSCLOCK, PLAYERX
+    global SCREEN, FPSCLOCK, PLAYERX, DRAW_SPEED
     pygame.init()
     FPSCLOCK = pygame.time.Clock()
     SCREEN = pygame.display.set_mode((SCREENWIDTH, SCREENHEIGHT))
@@ -137,7 +138,7 @@ def main():
         )
 
 
-        EPOCS = 100
+        EPOCS = 100000000000
         BATCH_SIZE = 20
 
         nnp.init() # Optional load file here
@@ -184,9 +185,9 @@ class Bird(object):
     def update(self, pipes):
         if not self.alive:
             return
-        pipesInfront = pipe for pipe in pipes if not pipe.behind(self.x)
-        nPipe = next(pipesInfront)
-        nnPipe = next(pipesInfront)
+        pipesInfront = [pipe for pipe in pipes if not pipe.behind(self.x)]
+        nPipe = pipesInfront[0]
+        nnPipe = pipesInfront[1]
 
         playerInfo = [
             self.y, self.velY, 
@@ -301,6 +302,7 @@ class Pipe(object):
 
 
 def mainGame(players):
+    global DRAW_SPEED
     basex = 0
     playerIndexGen = cycle([0, 1, 2, 1])
     loopIter = 0
@@ -318,6 +320,7 @@ def mainGame(players):
         Pipe(int(SCREENWIDTH * 3/2) + 200)
     ]
 
+    drawCount = 0
 
     while True:
         endRound = True
@@ -338,6 +341,18 @@ def mainGame(players):
                 pygame.quit()
                 sys.exit()
 
+            if event.type == KEYDOWN:
+                if event.key == K_1:
+                    DRAW_SPEED = 1
+                if event.key == K_2:
+                    DRAW_SPEED = 2
+                if event.key == K_3:
+                    DRAW_SPEED = 4
+                if event.key == K_4:
+                    DRAW_SPEED = 8
+                if event.key == K_5:
+                    DRAW_SPEED = 12
+
 
 
         # playerIndex basex change
@@ -346,15 +361,8 @@ def mainGame(players):
         loopIter = (loopIter + 1) % 30
         basex = -((-basex + 100) % baseShift)
 
-
-        # draw backgroud sprite
-        SCREEN.blit(IMAGES['background'], (0,0))
-
-        # Tick pipes and then draw here
-        # add new pipe when first pipe is about to touch left of SCREEN
         for pipe in pipes:
             pipe.update()
-            pipe.draw()
 
         if 0 < pipes[0].x < 5:
             pipes.append(Pipe(SCREENWIDTH + 10))
@@ -362,19 +370,32 @@ def mainGame(players):
         if pipes[0].is_out():
             pipes.pop(0)
 
-        SCREEN.blit(IMAGES['base'], (basex, BASEY))
-        # print score so player overlaps the score
-        score = max([bird.score for bird in birds])
-        showScore(score)
+        ### Draw section
+        drawCount += 1
+        if drawCount % DRAW_SPEED == 0:
+            drawCount = 0
+            # draw backgroud sprite
+            SCREEN.blit(IMAGES['background'], (0,0))
 
-        # Draw birds 
-        for bird in birds:
-            if bird.alive:
-                bird.draw()
-        
-        # probably some screen caping
-        pygame.display.update()
-        FPSCLOCK.tick(FPS)
+            # Tick pipes and then draw here
+            # add new pipe when first pipe is about to touch left of SCREEN
+            for pipe in pipes:
+                pipe.draw()
+
+
+            SCREEN.blit(IMAGES['base'], (basex, BASEY))
+            # print score so player overlaps the score
+            score = max([bird.score for bird in birds])
+            showScore(score)
+
+            # Draw birds 
+            for bird in birds:
+                if bird.alive:
+                    bird.draw()
+            
+            # probably some screen caping
+            pygame.display.update()
+            FPSCLOCK.tick(FPS)
 
 
 def showGameOverScreen(crashInfo):
