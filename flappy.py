@@ -353,6 +353,8 @@ def mainGame(players):
                 if event.key == K_5:
                     DRAW_SPEED = 12
 
+                if event.key == K_0:
+                    DRAW_SPEED = 10000000
 
 
         # playerIndex basex change
