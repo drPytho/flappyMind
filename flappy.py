@@ -184,9 +184,15 @@ class Bird(object):
     def update(self, pipes):
         if not self.alive:
             return
-        nextPipe = next(pipe for pipe in pipes if not pipe.behind(self.x))
+        pipesInfront = pipe for pipe in pipes if not pipe.behind(self.x)
+        nPipe = next(pipesInfront)
+        nnPipe = next(pipesInfront)
 
-        playerInfo = [self.y, self.velY, nextPipe.x - PLAYERX, nextPipe.y - self.y]
+        playerInfo = [
+            self.y, self.velY, 
+            nPipe.x - PLAYERX, nPipe.y - self.y,
+            nnPipe.x - PLAYERX, nnPipe.y - self.y
+        ]
         if self.p.play(playerInfo): # Should jump
             if self.y > -2 * self.h:
                 self.velY = self.flapAcc
@@ -267,7 +273,7 @@ class Pipe(object):
         return self.x < -IMAGES['pipe'][0].get_width()
     
     def behind(self, ox):
-        return self.x + IMAGES['pipe'][0].get_width()/2 < ox
+        return self.x + IMAGES['pipe'][0].get_width() < ox
 
     def colide(self, bird):
         birdRect = pygame.Rect(bird.x, bird.y, bird.w, bird.h)
