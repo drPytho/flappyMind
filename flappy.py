@@ -273,7 +273,7 @@ class Pipe(object):
         birdRect = pygame.Rect(bird.x, bird.y, bird.w, bird.h)
 
         hiPipeRect = pygame.Rect(self.x, self.y - PIPEGAPSIZE - self.h, self.w, self.h)
-        loPipeRect = pygame.Rect(self.x, self.y - PIPEGAPSIZE - self.h, self.w, self.h)
+        loPipeRect = pygame.Rect(self.x, self.y, self.w, self.h)
 
         pHitMask = HITMASKS['player'][bird.index]
         hiHitmask = HITMASKS['pipe'][0]
@@ -363,7 +363,8 @@ def mainGame(players):
 
         # Draw birds 
         for bird in birds:
-            bird.draw()
+            if bird.alive:
+                bird.draw()
         
         # probably some screen caping
         pygame.display.update()
