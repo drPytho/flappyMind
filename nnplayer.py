@@ -2,6 +2,7 @@ import random
 import numpy as np
 import math
 import ANNGenetic.ann as ann
+import matplotlib.pyplot as plt
 
 
 network = ann.ANN(6)
@@ -14,21 +15,36 @@ GENERATION = 0
 
 PLAYERS = None
 
+MEAN_SCORE = [0]
+GEN = [0]
+
+
 
 # initialize the gene pool
 def init(filePath=None): 
         global FAMILY
-        FAMILY = ann.Genetic(200, verbose=False)
+        FAMILY = ann.Genetic(1000, verbose=False)
         FAMILY.create_family(network)
 
 def getNewBatch(batch_size):
-    global FIRST_GEN, FAMILY, GENERATION, PLAYERS
-    GENERATION += 1
-    print("Generation", GENERATION)
+    global FIRST_GEN, FAMILY, GENERATION, PLAYERS, MEAN_SCORE, GEN
 
     if not FIRST_GEN:
         fitnesses = [x.fitness for x in PLAYERS]
-        print(sum(fitnesses) / len(fitnesses))
+
+        GENERATION += 1
+        mean = (sum(fitnesses) / len(fitnesses))
+
+        print("Generation", GENERATION)
+        
+        MEAN_SCORE.append(mean)
+        GEN.append(GENERATION)
+
+        plt.plot(GEN, MEAN_SCORE)
+        #plt.show()
+        plt.pause(0.5)
+
+
         FAMILY.evolve(fitnesses)
 
     FIRST_GEN = False
