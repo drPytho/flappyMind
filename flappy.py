@@ -260,7 +260,7 @@ class Pipe(object):
         self.x = x
         #TODO: Fix, cant be used with many birds
         self.scored = False
-        self.y = int(BASEY * 0.8) - random.randrange(0, int(BASEY * 0.6))
+        self.y = int(BASEY * 0.85) - random.randrange(0, int(BASEY * 0.5))
 
         self.w = IMAGES['pipe'][0].get_width()
         self.h = IMAGES['pipe'][0].get_height()
@@ -367,7 +367,7 @@ def mainGame(players):
             pipe.update()
 
         if 0 < pipes[0].x < 5:
-            pipes.append(Pipe(SCREENWIDTH + 10))
+            pipes.append(Pipe(pipes[-1].x + 180))
         
         if pipes[0].is_out():
             pipes.pop(0)
