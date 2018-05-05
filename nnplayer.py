@@ -1,12 +1,11 @@
 import random
 import numpy as np
 import math
-import ANNGenetic.ann
+import ANNGenetic.ann as ann
 
 
 network = ann.ANN(4)
-network.add_layer(ann.Layer(8, activation=np.sigmoid))
-network.add_layer(ann.Layer(8, activation=np.sigmoid))
+network.add_layer(ann.Layer(8, activation=np.tanh))
 network.add_layer(ann.Layer(1, activation=np.tanh))
 
 FAMILY = None
@@ -18,8 +17,9 @@ PLAYERS = None
 
 # initialize the gene pool
 def init(filePath=None): 
-	FAMILY = ann.Genetic(50, verbose=False)
-	FAMILY.create_family(network)
+        global FAMILY
+        FAMILY = ann.Genetic(200, verbose=False)
+        FAMILY.create_family(network)
 
 def getNewBatch(batch_size):
     global FIRST_GEN, FAMILY, GENERATION, PLAYERS
@@ -27,9 +27,11 @@ def getNewBatch(batch_size):
     print("Generation", GENERATION)
 
     if not FIRST_GEN:
-	fitnesses = [x.fitness for x in PLAYERS]
-	FAMILY.evolve(fitnesses)
+        fitnesses = [x.fitness for x in PLAYERS]
+        print(sum(fitnesses) / len(fitnesses))
+        FAMILY.evolve(fitnesses)
 
+    FIRST_GEN = False
     PLAYERS = [Player(x) for x in FAMILY.family]
 
     return PLAYERS
@@ -50,5 +52,7 @@ class Player(object):
             #     'playerToPipeX': lowerPipes['x'] - playerx,
             #     'playerToPipeY': lowerPipes['y'] - playery
             # }
-        return self.dann.prop(np.array(playerInfo)) > 0
+        
+        pred = self.dann.prop(np.array(playerInfo))
+        return pred > 0
 
