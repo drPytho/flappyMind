@@ -41,7 +41,7 @@ class Player(object):
             #     'playerToPipeX': lowerPipes['x'] - playerx,
             #     'playerToPipeY': lowerPipes['y'] - playery
             # }
-        return self.dann.predict(np.array(list(playerInfo.values()))) > 0
+        return self.dann.predict(np.array(playerInfo)) > 0
 
 def relu(x):
     return np.maximum(x, 0)

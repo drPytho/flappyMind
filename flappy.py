@@ -18,7 +18,7 @@ BASEY        = SCREENHEIGHT * 0.79
 # image, sound and hitmask  dicts
 IMAGES, SOUNDS, HITMASKS = {}, {}, {}
 
-PLAYERX = int(SCREENWIDTH * 0.2),
+PLAYERX = int(SCREENWIDTH * 0.2)
 
 # list of all possible players (tuple of 3 positions of flap)
 PLAYERS_LIST = (
@@ -63,7 +63,7 @@ except NameError:
 
 
 def main():
-    global SCREEN, FPSCLOCK
+    global SCREEN, FPSCLOCK, PLAYERX
     pygame.init()
     FPSCLOCK = pygame.time.Clock()
     SCREEN = pygame.display.set_mode((SCREENWIDTH, SCREENHEIGHT))
@@ -158,7 +158,7 @@ class Bird(object):
     def __init__(self, player):
         self.alive    =  True
         self.p        =  player
-        self.x        =  playerx
+        self.x        =  PLAYERX
         self.y        =  int((SCREENHEIGHT - IMAGES['player'][0].get_height()) / 2)
 
         self.index    =  0 
@@ -186,8 +186,8 @@ class Bird(object):
             return
         nextPipe = next(pipe for pipe in pipes if not pipe.behind(self.x))
 
-        playerInfo = [self.y, self.velY, nextPipe.x - playerx, nextPipe.y - self.y]
-        if player.play(playerInfo): # Should jump
+        playerInfo = [self.y, self.velY, nextPipe.x - PLAYERX, nextPipe.y - self.y]
+        if self.p.play(playerInfo): # Should jump
             if self.y > -2 * self.h:
                 self.velY = self.flapAcc
                 self.flapped = True
@@ -200,7 +200,7 @@ class Bird(object):
         self.fitness += 1
 
         # check for score
-        playerMidPos = playerx + self.w/2
+        playerMidPos = PLAYERX + self.w/2
         for pipe in pipes:
             if not pipe.behind(playerMidPos-4) and pipe.behind(playerMidPos):
                 pipe.scored = True
@@ -224,9 +224,9 @@ class Bird(object):
 
     def draw(self):
         # Player rotation has a threshold
-        rot = min(self.rot, rotThr)
+        rot = min(self.rot, self.rotThr)
         playerSurface = pygame.transform.rotate(IMAGES['player'][self.index], rot)
-        SCREEN.blit(playerSurface, (playerx, playery))
+        SCREEN.blit(playerSurface, (PLAYERX, self.y))
 
     # TODO: Fix me
     def crashed(self, pipes):
@@ -261,7 +261,7 @@ class Pipe(object):
     def update(self):
         # TODO: Change to game constant
         pipeVelX = -4
-        self.x += pipVelX
+        self.x += pipeVelX
 
     def is_out(self):
         return self.x < -IMAGES['pipe'][0].get_width()
@@ -291,14 +291,13 @@ class Pipe(object):
     def draw(self):
         # Draw pipes
         SCREEN.blit(IMAGES['pipe'][0], (self.x, self.y - PIPEGAPSIZE - self.h))
-                
-
         SCREEN.blit(IMAGES['pipe'][1], (self.x, self.y))
 
 
 def mainGame(players):
     basex = 0
     playerIndexGen = cycle([0, 1, 2, 1])
+    loopIter = 0
 
     birds = [Bird(p) for p in players]
 
@@ -322,7 +321,7 @@ def mainGame(players):
                 endRound = False
                 bird.update(pipes)
                 bird.crashed(pipes)
-                bird.update_score(pipes)
+                bird.update_after(pipes)
 
         if endRound:
             return
@@ -347,20 +346,24 @@ def mainGame(players):
 
         # Tick pipes and then draw here
         # add new pipe when first pipe is about to touch left of SCREEN
-        if 0 < upperPipes[0]['x'] < 5:
-            newPipe = getRandomPipe()
-            upperPipes.append(newPipe[0])
-            lowerPipes.append(newPipe[1])
-    
+        for pipe in pipes:
+            pipe.update()
+            pipe.draw()
+
+        if 0 < pipes[0].x < 5:
+            pipes.append(Pipe(SCREENWIDTH + 10))
         
+        if pipes[0].is_out():
+            pipes.pop(0)
 
         SCREEN.blit(IMAGES['base'], (basex, BASEY))
         # print score so player overlaps the score
+        score = max([bird.score for bird in birds])
         showScore(score)
 
         # Draw birds 
         for bird in birds:
-            bird.draw(SCREEN)
+            bird.draw()
         
         # probably some screen caping
         pygame.display.update()
@@ -370,7 +373,7 @@ def mainGame(players):
 def showGameOverScreen(crashInfo):
     """crashes the player down ans shows gameover image"""
     score = crashInfo['score']
-    playerx = SCREENWIDTH * 0.2
+    PLAYERX = SCREENWIDTH * 0.2
     playery = crashInfo['y']
     playerHeight = IMAGES['player'][0].get_height()
     playerVelY = crashInfo['playerVelY']
@@ -420,7 +423,7 @@ def showGameOverScreen(crashInfo):
         showScore(score)
 
         playerSurface = pygame.transform.rotate(IMAGES['player'][1], playerRot)
-        SCREEN.blit(playerSurface, (playerx,playery))
+        SCREEN.blit(playerSurface, (PLAYERX,playery))
 
         FPSCLOCK.tick(FPS)
         pygame.display.update()
