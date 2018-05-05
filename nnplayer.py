@@ -23,7 +23,7 @@ GEN = [0]
 # initialize the gene pool
 def init(filePath=None): 
         global FAMILY
-        FAMILY = ann.Genetic(1000, verbose=False)
+        FAMILY = ann.Genetic(200, children_to_select=0.3, verbose=False)
         FAMILY.create_family(network)
 
 def getNewBatch(batch_size):
