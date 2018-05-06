@@ -1,0 +1,3 @@
+[submodule "ANNGenetic"]
+	path = ANNGenetic
+	url = https://github.com/JonasRSV/ANNGenetic
