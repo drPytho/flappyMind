@@ -10,7 +10,7 @@ Jonas Sunde
 ### Dependencies
 - numpy
 - matplotlib
-
+- pygame
 
 ## Usage 
 `python3 flappy.py`
